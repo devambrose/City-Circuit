@@ -1,89 +1,61 @@
-import React from "react"
+import React,{Component} from "react"
 import { Link, graphql } from "gatsby"
 
 import Bio from "../components/bio"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
+import axios from "axios";
 
-const BlogIndex = ({ data, location }) => {
-  const siteTitle = data.site.siteMetadata?.title || `Title`
-  const posts = data.allMarkdownRemark.nodes
+class IndexPage extends Component{
+    constructor(props) {
+        super(props);
 
-  if (posts.length === 0) {
-    return (
-      <Layout location={location} title={siteTitle}>
-        <SEO title="All posts" />
-        <Bio />
-        <p>
-          No blog posts found. Add markdown posts to "content/blog" (or the
-          directory you specified for the "gatsby-source-filesystem" plugin in
-          gatsby-config.js).
-        </p>
-      </Layout>
-    )
-  }
+        this.state={
+            coins:['ethereum','bitcoin'],
+            data:[]
+        }
+    }
+    componentDidMount(){
+        const current=this;
 
-  return (
-    <Layout location={location} title={siteTitle}>
-      <SEO title="All posts" />
-      <Bio />
-      <ol style={{ listStyle: `none` }}>
-        {posts.map(post => {
-          const title = post.frontmatter.title || post.fields.slug
+        for(let i=0;i<this.state.coins.length;i++){
 
-          return (
-            <li key={post.fields.slug}>
-              <article
-                className="post-list-item"
-                itemScope
-                itemType="http://schema.org/Article"
-              >
-                <header>
-                  <h2>
-                    <Link to={post.fields.slug} itemProp="url">
-                      <span itemProp="headline">{title}</span>
-                    </Link>
-                  </h2>
-                  <small>{post.frontmatter.date}</small>
-                </header>
-                <section>
-                  <p
-                    dangerouslySetInnerHTML={{
-                      __html: post.frontmatter.description || post.excerpt,
-                    }}
-                    itemProp="description"
-                  />
-                </section>
-              </article>
-            </li>
-          )
-        })}
-      </ol>
-    </Layout>
-  )
+            let state_data=this.state.data;
+            axios('https://api.coingecko.com/api/v3/coins/'+this.state.coins[i]+'?localization=false&market_data=true&community_data=true&developer_data=true&sparkline=true').then(results=>{
+                state_data.push({id:this.state.coins[i],...results.data });
+            });
+            this.setState({data: state_data});
+        }
+
+
+    }
+    componentDidUpdate(prev,current){
+        console.log("Previous state",prev);
+        console.log("current",current);
+    }
+
+    render(){
+        const containers=[];
+        for(let i=0;i<this.state.data.length;i++){
+            const current=this.state.data[i];
+            containers.push(
+                <div key={i} className={'app-left app-full'}>
+                    <h3>{this.state.data[i].id}</h3>
+                    <img src={this.state.data[i].image.small} />
+                    <small >$ {current.market_data.current_price.usd}</small>
+                </div>
+            );
+        }
+        console.log(this.state.data);
+        return (
+            <div title={'City Circuit'}>
+                <SEO title="Main CryptoTrade" />
+                {containers}
+                Better Tradde
+
+            </div>
+        )
+    }
 }
 
-export default BlogIndex
-
-export const pageQuery = graphql`
-  query {
-    site {
-      siteMetadata {
-        title
-      }
-    }
-    allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
-      nodes {
-        excerpt
-        fields {
-          slug
-        }
-        frontmatter {
-          date(formatString: "MMMM DD, YYYY")
-          title
-          description
-        }
-      }
-    }
-  }
-`
+export default IndexPage;
