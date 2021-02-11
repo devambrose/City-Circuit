@@ -1,9 +1,8 @@
 import React,{Component} from "react"
-import { Link, graphql } from "gatsby"
 
-import Bio from "../components/bio"
-import Layout from "../components/layout"
+import Layout from "../components/Containers/Layout/Layout"
 import SEO from "../components/seo"
+import {Loader,Coin} from "../templates/Template"
 import axios from "axios";
 
 class IndexPage extends Component{
@@ -16,7 +15,6 @@ class IndexPage extends Component{
         }
     }
     componentDidMount(){
-        const current=this;
 
         for(let i=0;i<this.state.coins.length;i++){
 
@@ -35,25 +33,22 @@ class IndexPage extends Component{
     }
 
     render(){
-        const containers=[];
-        for(let i=0;i<this.state.data.length;i++){
-            const current=this.state.data[i];
-            containers.push(
-                <div key={i} className={'app-left app-full'}>
-                    <h3>{this.state.data[i].id}</h3>
-                    <img src={this.state.data[i].image.small} />
-                    <small >$ {current.market_data.current_price.usd}</small>
-                </div>
-            );
-        }
         console.log(this.state.data);
         return (
-            <div title={'City Circuit'}>
+            <Layout title={'City Circuit'}>
                 <SEO title="Main CryptoTrade" />
-                {containers}
-                Better Tradde
+                <div className='coin-container'>
+                {
+                    [
+                        {name:"Bitcoin",icon:'fab fa-bitcoin'},
+                        {name:'Etherium',icon:'fab fa-ethereum'}
+                    ].map(coin=><Coin {...coin}/>)
+                }
+                </div>
+               
 
-            </div>
+                <Loader/>
+            </Layout>
         )
     }
 }
